@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth , { AuthError } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
 import { JWT } from "next-auth/jwt";
@@ -12,6 +12,13 @@ import type {
   DecodedJWT
 } from "next-auth";
 
+
+class customError extends AuthError {
+  constructor(message: string) {
+      super()
+      this.message = message
+  }
+}
 
 async function refreshAccessToken(nextAuthJWTCookie: JWT): Promise<JWT> {
   try {
@@ -85,9 +92,15 @@ export const {auth,
               headers: { "Content-Type": "application/json" },
             }
           );
+          
+          if (!res.ok){
+            const data = await res.json();
+            
+            const errorMessage = data.error || data.details || "Login failed.";
+            throw new Error(errorMessage);// Throw error with the extracted message
+            
+            }
           const tokens: BackendJWT = await res.json();
-          if (!res.ok) throw tokens;
-          console.log(tokens);
           
           const access: DecodedJWT = jwtDecode(tokens.access_token);
           const refresh: DecodedJWT = jwtDecode(tokens.refresh_token);
@@ -112,9 +125,10 @@ return {
   user: user,
   validity: validity
 } as User;
-        } catch (e) {
-          console.error(e);
-          return null;
+        } catch (e: any) {
+          console.log(e);
+          
+          throw new customError(e.message || "An unexpected error occurred.");
         }
       },
     }),

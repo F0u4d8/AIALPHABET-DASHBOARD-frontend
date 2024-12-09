@@ -14,6 +14,7 @@ export default function LoginForm() {
 
   return (
     <form action={formAction}>
+       <input type="hidden" name="redirectTo" value="/dashboard" />
       <div className="flex-1 rounded-lg  px-6 pb-4 pt-8">
         <h1 className={`${lusitana.className} mb-3 text-2xl`}>
           Please log in to continue.
@@ -73,7 +74,7 @@ export default function LoginForm() {
           {errorMessage && (
             <>
               <CircleAlert className="h-5 w-5 text-red-500" />
-              <p className="text-sm text-red-500">{errorMessage}</p>
+              <p className="text-sm text-red-500">{errorMessage.error!.message}</p>
             </>
           )}
         </div>

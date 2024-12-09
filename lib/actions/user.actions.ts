@@ -8,12 +8,14 @@ export const logout = async () => {
   revalidatePath("/");
 };
 
-export const loginWithCreds = async (  prevState: string | undefined,
-  formData: FormData) => {
+export const loginWithCreds = async (
+  state: any,
+  formData: FormData
+)=> {
   const rawFormData = {
     email: formData.get("email"),
     password: formData.get("password"),
-    redirectTo: "/",
+    redirectTo: "/dashboard",
   };
 
   try {
@@ -21,6 +23,12 @@ export const loginWithCreds = async (  prevState: string | undefined,
     revalidatePath("/dashboard");
 
   } catch (error: any) {
-    throw error;
+    if (error.type === "AuthError") {
+      return { 
+          error: { message: error.message }
+      }
+  }
+  throw error;
+
   }
 };
