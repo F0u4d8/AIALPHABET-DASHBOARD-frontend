@@ -9,8 +9,8 @@ import { Files, HomeIcon, UsersIcon } from 'lucide-react'
 const links = [
   { name: 'Home', href: '/dashboard', icon: HomeIcon },
   {
-    name: 'Invoices',
-    href: '/dashboard/invoices',
+    name: 'Categories',
+    href: '/dashboard/categories',
     icon: Files,
   },
   { name: 'Customers', href: '/dashboard/customers', icon: UsersIcon },

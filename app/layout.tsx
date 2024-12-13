@@ -5,6 +5,7 @@ import { APP_DESCRIPTION, APP_NAME, SERVER_URL } from '@/lib/constants'
 import { Metadata } from 'next'
 import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from 'next-themes'
+import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: {
@@ -31,6 +32,8 @@ export default async function RootLayout({
      enableSystem
      disableTransitionOnChange
    >
+      <Toaster />
+
      {children}
    </ThemeProvider></SessionProvider>
       </body>

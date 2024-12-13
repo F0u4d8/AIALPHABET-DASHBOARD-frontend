@@ -22,7 +22,6 @@ class customError extends AuthError {
 
 async function refreshAccessToken(nextAuthJWTCookie: JWT): Promise<JWT> {
   try {
-    console.log("Beaarer token", `Bearer ${nextAuthJWTCookie.data.tokens.refresh_token}`);
 
     const response = await fetch(
       `${process.env.API_SERVER_BASE_URL}/api/admin/refresh`,
@@ -34,7 +33,6 @@ async function refreshAccessToken(nextAuthJWTCookie: JWT): Promise<JWT> {
     );
     const accessToken: BackendAccessJWT = await response.json();
     if (!response.ok) throw accessToken;
-    console.log(accessToken);
 
     const { exp }: DecodedJWT = jwtDecode(accessToken.access_token);
 // Update the token and validity in the next-auth cookie
@@ -143,20 +141,17 @@ return {
      
 
       if (user && account) {
-        console.debug("Initial signin");
         return { ...token, data: user };
       }
 
 
          // The current access token is still valid
       if (Date.now() < token.data.validity.valid_until * 1000) {
-        console.debug("Access token is still valid");
         return token;
       }
 
       // The refresh token is still valid
       if (Date.now() < token.data.validity.refresh_until * 1000) {
-        console.debug("Access token is being refreshed");
         return await refreshAccessToken(token);
       }
 
@@ -164,7 +159,6 @@ return {
       // This should not really happen unless you get really unlucky with
       // the timing of the token expiration because the middleware should
       // have caught this case before the callback is called
-      console.debug("Both tokens have expired");
       return { ...token, error: "RefreshTokenExpired" } as JWT;
 
     },
@@ -175,6 +169,7 @@ return {
       session.user.avatar = token.data.user.avatar
       session.validity = token.data.validity;
       session.error = token.error;
+      session.sessionToken = token.data.tokens.access_token
       return session;
     },
   },
