@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// Enum for user roles
+enum UserRole {
+  USER
+  ADMIN
+}
+
+// Equivalent to Django's User model (using built-in authentication)
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String // Store hashed password
+  role      UserRole @default(USER)
+  profile   UserProfile?
+  // Add other user fields as needed
+  todos     Todo[]
+}
+
+model UserProfile {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  username   String
+  avatarUrl  String   @default("avatars/avatar1.jpg")
+}
+
+
+model QRCode {
+  id        String   @id @default(uuid())
+  code      String   @unique
+  createdAt DateTime @default(now())
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  contents    Content[]
+}
+
+model Content {
+  id         String   @id @default(cuid())
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  title      String
+  url        String
+  pitch      String   @db.Text
+  image      String
+}
+
+model Todo {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  priority    Int      @default(2)
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Prisma doesn't support direct enum choices like Django, 
+  // so you'll handle priority mapping in your application logic
+  // 0: 'عاجل'
+  // 1: 'مهم'
+  // 2: 'عادي'
+  // 3: 'غير مهم'
+}

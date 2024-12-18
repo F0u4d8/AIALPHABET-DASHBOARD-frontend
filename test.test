@@ -1,0 +1,116 @@
+POST http://127.0.0.1:8000/api/signup 
+Content-Type: application/json
+
+{ "username": "fouad3", "password": "Pass1234!", "email": "f0u4d8@gmail.com" , "qr_code":"bccaf8dd-0cb7-4148-a634-9bde78bd67ad" }
+
+###
+
+POST http://127.0.0.1:8000/api/login
+Content-Type: application/json
+
+{ "username": "f0u4d", "password": "190801" }
+
+
+
+###
+POST http://127.0.0.1:8000/api/admin/generateQr
+Content-Type: application/json
+Authorization: token 2a4bd27c68808313f79c7dffdd42080ad476607f
+
+###
+
+GET http://127.0.0.1:8000/api/category/0/
+Content-Type: application/json
+Authorization: token 2a4bd27c68808313f79c7dffdd42080ad476607f
+
+###
+GET http://127.0.0.1:8000/api/categories
+Content-Type: application/json
+Authorization: token 6b5dbe89bfd73d35f468faf9149e73f27725a888
+
+
+###
+GET http://127.0.0.1:8000/api/countCategories/?query=dfgsdfg
+Content-Type: application/json
+Authorization: token 6b5dbe89bfd73d35f468faf9149e73f27725a888
+
+
+
+###
+
+GET http://127.0.0.1:8000/api/content/0/
+Content-Type: application/json
+Authorization: token 6b5dbe89bfd73d35f468faf9149e73f27725a888
+
+
+
+
+###
+GET   http://127.0.0.1:8000/api/admin/category/3/
+Authorization: token 2a4bd27c68808313f79c7dffdd42080ad476607f
+Content-Type: application/json
+
+{ "name": "test", "description": "description" }
+
+
+###
+POST   http://127.0.0.1:8000/api/admin/content/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo0LCJlbWFpbCI6Im1haG1lZGYwdTRkQGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZjB1NGQiLCJpc19zdGFmZiI6dHJ1ZSwiYXZhdGFyIjoiL21lZGlhL2F2YXRhcnMvYXZhdGFyMS5qcGciLCJleHAiOjE3MzM5NTg4NjgsImlhdCI6MTczMzk1ODgwOX0.qzX8cEJ3YRYYtWNUyrU6RJENLS4iR7m3RXT9OqkHFyg
+Content-Type: application/json
+
+{ "title": "test", "url": "https://chatgpt.com/" ,"pitch": "this is description", "image": "https://logos-world.net/wp-content/uploads/2023/02/ChatGPT-Logo.png" ,"category": "0" }
+
+
+###
+PUT   http://127.0.0.1:8000/api/admin/content/1/
+Authorization: token 2a4bd27c68808313f79c7dffdd42080ad476607f
+Content-Type: application/json
+
+{ "title": "testEdited", "url": "https://chatgpt.com/" ,"pitch": "this is description", "image": "https://logos-world.net/wp-content/uploads/2023/02/ChatGPT-Logo.png" ,"category": "0" }
+
+
+###
+
+POST http://127.0.0.1:8000/api/admin/login
+Content-Type: application/json
+
+{ "email": "mahmedf0u4d@gmail.com", "password": "190801" }
+
+
+###
+
+POST http://127.0.0.1:8000/api/admin/refresh
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsIno0LCJ
+
+
+
+
+###
+GET   http://127.0.0.1:8000/api/todo-lists
+Content-Type: application/json
+Authorization: token 2a4bd27c68808313f79c7dffdd42080ad476607f
+
+ { "title": "Buy groceries",
+    "description": "Milk, Bread, Cheese",
+    "priority": "2"}
+
+
+
+###
+PUT   http://127.0.0.1:8000/api/todo-list/1
+Authorization: token 2a4bd27c68808313f79c7dffdd42080ad476607f
+Content-Type: application/json
+
+ { "title": "Buy groceries",
+    "description": "Milk, Bread, Cheese",
+    "priority": "3"}
+
+
+
+###
+GET   http://127.0.0.1:8000/api/admin/categories/query=a
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo0LCJlbWFpbCI6Im1haG1lZGYwdTRkQGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZjB1NGQiLCJpc19zdGFmZiI6dHJ1ZSwiYXZhdGFyIjoiL21lZGlhL2F2YXRhcnMvYXZhdGFyMS5qcGciLCJleHAiOjE3MzM5NTk2MzksImlhdCI6MTczMzk1OTU4MH0.wXhmj7-3qecIZaziZgvl1nzVPzkLoWFiJxNm0mGEHNw
+Content-Type: application/json
+
+{ "name": "test", "description": "description" }

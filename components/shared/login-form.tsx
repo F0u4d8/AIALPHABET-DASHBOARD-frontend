@@ -74,7 +74,7 @@ export default function LoginForm() {
           {errorMessage && (
             <>
               <CircleAlert className="h-5 w-5 text-red-500" />
-              <p className="text-sm text-red-500">{errorMessage.error!.message}</p>
+              <p className="text-sm text-red-500">{errorMessage}</p>
             </>
           )}
         </div>

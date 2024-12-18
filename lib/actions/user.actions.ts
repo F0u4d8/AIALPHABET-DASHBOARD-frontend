@@ -1,6 +1,7 @@
 "use server";
 
 import { signIn, signOut } from "@/auth";
+import { AuthError } from "next-auth";
 import { revalidatePath } from "next/cache";
 
 export const logout = async () => {
@@ -23,9 +24,12 @@ export const loginWithCreds = async (
     revalidatePath("/dashboard");
 
   } catch (error: any) {
-    if (error.type === "AuthError") {
-      return { 
-          error: { message: error.message }
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case 'CredentialsSignin':
+          return 'Invalid credentials.'
+        default:
+          return 'Something went wrong.'
       }
   }
   throw error;

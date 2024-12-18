@@ -1,5 +1,8 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import jwt from 'jsonwebtoken';
+import { User } from '@prisma/client';
+import { NextResponse } from "next/server";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -61,3 +64,12 @@ export const formatDateToLocal = (
   const formatter = new Intl.DateTimeFormat(locale, options)
   return formatter.format(date)
 }
+
+
+export function generateUniqueCode(length = 8) {
+  return Math.random().toString(36).substring(2, length + 2).toUpperCase();
+}
+
+
+
+
