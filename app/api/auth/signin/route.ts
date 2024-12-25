@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json(
         {
-          token,
+          token, requireProfileSetup: true
         },
         { status: 201 }
       );

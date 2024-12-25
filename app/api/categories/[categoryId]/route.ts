@@ -3,15 +3,21 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
     request: NextRequest, 
-    { params }: { params: { categoryId: string } }
+    { params }: { params: Promise<{ categoryId: string }>  }
   ) {
-const categoryId = params.categoryId;
+const categoryId =(await params).categoryId;
+console.log(categoryId);
 
     try {
       // Find category and its contents
       const category = await prisma.category.findUnique({
         where: { id: categoryId },
-        include: { contents: true }
+        include: {contents :{
+          select: {
+            id: true,
+            image: true ,url :true , title:true
+          }
+        }}
       });
   
       if (!category) {

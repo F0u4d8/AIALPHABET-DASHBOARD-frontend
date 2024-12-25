@@ -1,5 +1,6 @@
 import prisma from "@/lib/db";
 import { verifyMobileToken } from "@/lib/tokens/verifyTokens";
+import { updateTodoSchema } from "@/lib/zodSchemas";
 import { NextRequest, NextResponse } from "next/server";
 
 
@@ -12,10 +13,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest, 
-  { params }: { params: { tudoId: string } }
+  { params }: { params: Promise<{ tudoId: string }>  }
 ) {
 
-  const tudoId = params.tudoId;
+  const tudoId = (await params).tudoId;
 
   try {
     // Find specific content
@@ -48,7 +49,7 @@ export async function GET(
 
 export async function PUT(
     request: NextRequest, 
-    { params }: { params: { todoId: string } }
+    { params }:  { params: Promise<{ tudoId: string }>  }
   ) {
 
     try {
@@ -70,7 +71,7 @@ const userId = await verifyMobileToken(mobileToken);
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
           }
           
-    const todoId = params.todoId;
+    const todoId = (await params).tudoId;
   
       // Find todo owned by the user
       const existingTodo = await prisma.todo.findUnique({
@@ -86,18 +87,19 @@ const userId = await verifyMobileToken(mobileToken);
           { status: 404 }
         );
       }
-  
-      // Parse request body
       const body = await request.json();
+
+      // Parse request body
+     const {title ,priority ,isCompleted ,description   } = await updateTodoSchema.parseAsync(body);
   
       // Update todo
       const updatedTodo = await prisma.todo.update({
         where: { id: todoId },
         data: {
-          title: body.title ?? existingTodo.title,
-          isCompleted: body.isCompleted ?? existingTodo.isCompleted ,
-          description : body.description ?? existingTodo.description ,
-          priority : body.priority ?? existingTodo.priority ,
+          title: title ?? existingTodo.title,
+          isCompleted: isCompleted ?? existingTodo.isCompleted ,
+          description : description ?? existingTodo.description ,
+          priority : priority ?? existingTodo.priority ,
         }
       });
   
@@ -112,8 +114,7 @@ const userId = await verifyMobileToken(mobileToken);
   }
   
   export async function DELETE(
-    request: NextRequest, 
-    { params }: { params: { todoId: string } }
+    request: NextRequest,     { params }: { params: Promise<{ tudoId: string }>  }
   ) {
     try {
 
@@ -138,7 +139,7 @@ const userId = await verifyMobileToken(mobileToken);
        }
        
   
-    const todoId = params.todoId;
+       const todoId = (await params).tudoId;
   
       // Delete todo owned by the user
       await prisma.todo.delete({
@@ -150,7 +151,7 @@ const userId = await verifyMobileToken(mobileToken);
   
       return NextResponse.json(
         { message: 'Todo deleted successfully' }, 
-        { status: 204 }
+        { status: 200 }
       );
     } catch (error) {
       console.error('Todo deletion error:', error);

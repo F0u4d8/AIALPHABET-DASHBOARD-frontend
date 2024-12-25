@@ -4,7 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
-import { signInSchema, signUpSchema } from '@/lib/zodSchemas';
+import {  signUpSchema } from '@/lib/zodSchemas';
 import prisma from '@/lib/db';
 import { generateToken } from '@/lib/tokens/generateTokens';
 

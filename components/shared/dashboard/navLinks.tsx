@@ -4,13 +4,18 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { Files, HomeIcon, UsersIcon } from 'lucide-react'
+import { Files, HomeIcon, UsersIcon  } from 'lucide-react'
 
 const links = [
   { name: 'Home', href: '/dashboard', icon: HomeIcon },
   {
     name: 'Categories',
     href: '/dashboard/categories',
+    icon: Files,
+  },
+  {
+    name: 'Contents',
+    href: '/dashboard/contents',
     icon: Files,
   },
   { name: 'Customers', href: '/dashboard/customers', icon: UsersIcon },

@@ -1,5 +1,6 @@
 import prisma from "@/lib/db";
 import { verifyMobileToken } from "@/lib/tokens/verifyTokens";
+import { todoSchema } from "@/lib/zodSchemas";
 import { NextRequest, NextResponse } from "next/server";
 
 // app/api/todos/route.ts
@@ -70,21 +71,16 @@ export async function GET(request: NextRequest) {
       const body = await request.json();
   
       // Validate todo data (you might want more robust validation)
-      if (!body.title) {
-        return NextResponse.json(
-          { error: 'Title is required' }, 
-          { status: 400 }
-        );
-      }
+     const {title ,priority ,isCompleted ,description   } = await todoSchema.parseAsync(body);
   
       // Create todo for the authenticated user
       const newTodo = await prisma.todo.create({
         data: {
           userId :userId ,
-          title: body.title ,
-          isCompleted: body.isCompleted || false ,
-          description : body.description  ,
-          priority : body.priority ,
+          title: title ,
+          isCompleted: isCompleted || false ,
+          description : description ,
+          priority : priority ,
         }
       });
   

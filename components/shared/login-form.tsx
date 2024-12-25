@@ -5,6 +5,7 @@ import { useActionState } from 'react'
 import { ArrowRightIcon, AtSign, CircleAlert, LockKeyhole } from 'lucide-react'
 import { lusitana } from './fonts'
 import { Button } from '../ui/button'
+import Form from 'next/form'
 
 export default function LoginForm() {
   const [errorMessage, formAction, isPending] = useActionState(
@@ -13,7 +14,7 @@ export default function LoginForm() {
   )
 
   return (
-    <form action={formAction}>
+    <Form action={formAction}>
        <input type="hidden" name="redirectTo" value="/dashboard" />
       <div className="flex-1 rounded-lg  px-6 pb-4 pt-8">
         <h1 className={`${lusitana.className} mb-3 text-2xl`}>
@@ -79,6 +80,6 @@ export default function LoginForm() {
           )}
         </div>
       </div>
-    </form>
+    </Form>
   )
 }

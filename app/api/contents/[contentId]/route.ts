@@ -3,10 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
     request: NextRequest, 
-    { params }: { params: { contentId: string } }
+    { params }: { params: Promise<{ contentId: string }>   }
   ) {
 
-    const contentId = params.contentId;
+    const contentId = (await params).contentId;
   
     try {
       // Find specific content
