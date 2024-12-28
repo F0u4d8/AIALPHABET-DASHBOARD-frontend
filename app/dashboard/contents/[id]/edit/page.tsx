@@ -1,6 +1,5 @@
 
 import Breadcrumbs from '@/components/shared/categories/breadcrumbs'
-import EditCategiryForm from '@/components/shared/categories/editCategory'
 import EditContentForm from '@/components/shared/contents/editContent'
 import { fetchCategories } from '@/lib/actions/categoriesActions'
 import { fetchContentById } from '@/lib/actions/contentsActions'

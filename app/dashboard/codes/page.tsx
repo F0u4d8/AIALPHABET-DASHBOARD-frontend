@@ -1,14 +1,12 @@
 import { lusitana } from "@/components/shared/fonts";
 import { Metadata } from "next";
-import React, { Suspense, useState } from "react";
+import React, { Suspense } from "react";
 import { CategoriesTableSkeleton } from '@/components/shared/skeletons'
 import CreateCode from "@/components/shared/codes/CreateCode";
 import CodesTable from "@/components/shared/codes/table";
 import Pagination from "@/components/shared/categories/Pagination";
 import { fetchQRCodes, fetchQRCodesPages, markQRCodesAsCopied } from "@/lib/actions/qrCodeActions";
-import { Button } from "@/components/ui/button";
-import { saveAs } from 'file-saver';
-import * as XLSX from 'xlsx';
+
 
 export const metadata: Metadata = {
   title: "codes",

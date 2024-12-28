@@ -1,6 +1,5 @@
 "use server";
 
-import toast from "react-hot-toast";
 import prisma from "../db";
 import { categorySchema } from "../zodSchemas";
 import { revalidatePath } from "next/cache";

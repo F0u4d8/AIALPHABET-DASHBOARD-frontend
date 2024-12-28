@@ -5,7 +5,7 @@ import { UserProfile, UserRole } from '@prisma/client';
 const JWT_SECRET = process.env.JWT_SECRET || '';
 
 
-export async function verifyMobileToken(token: string , admin? : boolean): Promise<string | null> {
+export async function verifyMobileToken(token: string ): Promise<string | null> {
     try {
     
       
@@ -34,3 +34,4 @@ export async function verifyMobileToken(token: string , admin? : boolean): Promi
       return null;
     }
   }
+  

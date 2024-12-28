@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "../db";
-import { categorySchema, contentSchema } from "../zodSchemas";
+import { contentSchema } from "../zodSchemas";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import fs from "fs";

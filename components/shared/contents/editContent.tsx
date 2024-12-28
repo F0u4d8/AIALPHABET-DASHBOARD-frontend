@@ -21,7 +21,7 @@ type Preview = string | null;
 const EditContentForm: React.FC<CreateContentFormProps> = ({ categories , content }) => {
 
  const updateCategoryWithId = updateContent.bind(null, content.id)
-  const [errorMessage, formAction, isPending] = useActionState(
+  const [errorMessage, formAction] = useActionState(
     updateCategoryWithId , undefined
    )
 
