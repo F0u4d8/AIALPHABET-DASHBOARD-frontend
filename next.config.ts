@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   images: {unoptimized : true ,
     remotePatterns: [ {
       protocol: 'https',
-      hostname: 'upload.wikimedia.org'
+      hostname: 'teal-peculiar-dingo-421.mypinata.cloud'
     },] ,
   },
 };

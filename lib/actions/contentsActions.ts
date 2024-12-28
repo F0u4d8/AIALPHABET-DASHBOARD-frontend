@@ -4,8 +4,12 @@ import prisma from "../db";
 import { categorySchema, contentSchema } from "../zodSchemas";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import fs from "fs";
+import path from "path";
+import { v4 as uuidv4 } from "uuid";
 
 const ITEMS_PER_PAGE = process.env.ITEMS_PER_PAGE;
+const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
 
 export async function fetchContentsPages(query: string | null) {
   try {
@@ -71,7 +75,6 @@ export async function fetchFilteredContents(
     throw new Error("Failed to fetch categories.");
   }
 }
-
 export async function createContent(prevState: any, formData: FormData) {
   // Validate form fields using Zod
   const validatedFields = contentSchema.safeParse({
@@ -80,11 +83,11 @@ export async function createContent(prevState: any, formData: FormData) {
     categoryId: formData.get("categoryId"),
     url: formData.get("url"),
     image: formData.get("image"),
-
   });
 
   // If form validation fails, return errors early
   if (!validatedFields.success) {
+    console.log(validatedFields.error.flatten().fieldErrors);
     return {
       errors: validatedFields.error.flatten().fieldErrors,
       message: "Missing Fields. Failed to Create Content.",
@@ -92,13 +95,30 @@ export async function createContent(prevState: any, formData: FormData) {
   }
 
   // Prepare data for insertion
-  const { title , categoryId ,image ,pitch ,url } = validatedFields.data;
+  const { title, categoryId, image, pitch, url } = validatedFields.data;
+
+  // Ensure the upload directory exists
+  if (!fs.existsSync(UPLOAD_DIR)) {
+    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+  }
+
+  // Save the image locally
+  const imageFile = image as File;
+  const imageFileName = `${uuidv4()}-${imageFile.name}`;
+  const imagePath = path.join(UPLOAD_DIR, imageFileName);
+  const imageBuffer = Buffer.from(await imageFile.arrayBuffer());
+  fs.writeFileSync(imagePath, imageBuffer);
+
+  const imageUrl = `/uploads/${imageFileName}`;
 
   try {
     await prisma.content.create({
       data: {
         title,
-        pitch,image ,url ,categoryId
+        pitch,
+        image: imageUrl,
+        url,
+        categoryId,
       },
     });
   } catch (error) {
@@ -148,36 +168,109 @@ export async function createContent(prevState: any, formData: FormData) {
   redirect("/dashboard/contents");
 }
 
-export async function updateCategory(
-  id: string,
-  prevState: any,
-  formData: FormData
-) {
+
+
+export async function deleteContent(id: string) {
+  try {
+    await prisma.content.delete({
+      where: {
+        id,
+      },
+    });
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to delete content.");
+  }
+
+  // Success case
+  revalidatePath("/dashboard/contents");
+  redirect("/dashboard/contents");
+}
+
+export async function fetchContentById(id: string) {
+  try {
+    const category = await prisma.content.findUnique({
+      where: { id },
+    });
+
+    if (!category) {
+      throw new Error("Content not found");
+    }
+
+    return category;
+  } catch (error) {
+    console.error("Error fetching content by ID:", error);
+    throw new Error("Failed to fetch content");
+  }
+}
+
+export async function updateContent(id: string, prevState: any, formData: FormData) {
   // Validate form fields using Zod
-  const validatedFields = categorySchema.safeParse({
-    name: formData.get("name"),
-    description: formData.get("description"),
+  const validatedFields = contentSchema.safeParse({
+    title: formData.get("title"),
+    pitch: formData.get("pitch"),
+    categoryId: formData.get("categoryId"),
+    url: formData.get("url"),
+    image: formData.get("image"),
   });
 
   // If form validation fails, return errors early
   if (!validatedFields.success) {
+    console.log(validatedFields.error.flatten().fieldErrors);
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: "Missing Fields. Failed to Update Category.",
+      message: "Missing Fields. Failed to Update Content.",
     };
   }
 
-  // Prepare data for insertion
-  const { name, description } = validatedFields.data;
+  // Prepare data for update
+  const { title, categoryId, image, pitch, url } = validatedFields.data;
+
+  // Fetch the existing content to get the current image URL
+  const existingContent = await prisma.content.findUnique({
+    where: { id },
+  });
+
+  if (!existingContent) {
+    return {
+      message: "Content not found.",
+    };
+  }
+
+  let imageUrl = existingContent.image;
+
+  // If a new image is provided, delete the old one and save the new one
+  if (image) {
+    // Ensure the upload directory exists
+    if (!fs.existsSync(UPLOAD_DIR)) {
+      fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+    }
+
+    // Delete the old image
+    const oldImagePath = path.join(process.cwd(), "public", existingContent.image);
+    if (fs.existsSync(oldImagePath)) {
+      fs.unlinkSync(oldImagePath);
+    }
+
+    // Save the new image locally
+    const imageFile = image as File;
+    const imageFileName = `${uuidv4()}-${imageFile.name}`;
+    const imagePath = path.join(UPLOAD_DIR, imageFileName);
+    const imageBuffer = Buffer.from(await imageFile.arrayBuffer());
+    fs.writeFileSync(imagePath, imageBuffer);
+
+    imageUrl = `/uploads/${imageFileName}`;
+  }
 
   try {
-    await prisma.category.update({
-      where: {
-        id,
-      },
+    await prisma.content.update({
+      where: { id },
       data: {
-        name,
-        description,
+        title,
+        pitch,
+        image: imageUrl,
+        url,
+        categoryId,
       },
     });
   } catch (error) {
@@ -192,7 +285,7 @@ export async function updateCategory(
       // Unique constraint violation
       const field = prismaError.meta?.target?.[0] || "field";
       return {
-        message: `A category with this ${field} already exists.`,
+        message: `A content with this ${field} already exists.`,
         errors: {
           [field]: [`This ${field} is already taken.`],
         },
@@ -218,45 +311,11 @@ export async function updateCategory(
 
     // Return a generic error message for unhandled cases
     return {
-      message: "An unexpected error occurred while updating the category.",
+      message: "An unexpected error occurred while updating content.",
     };
-  }
-
-  // Success case
-  revalidatePath("/dashboard/categories");
-  redirect("/dashboard/categories");
-}
-
-export async function deleteContent(id: string) {
-  try {
-    await prisma.content.delete({
-      where: {
-        id,
-      },
-    });
-  } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to delete content.");
   }
 
   // Success case
   revalidatePath("/dashboard/contents");
   redirect("/dashboard/contents");
-}
-
-export async function fetchCategoryById(id: string) {
-  try {
-    const category = await prisma.category.findUnique({
-      where: { id },
-    });
-
-    if (!category) {
-      throw new Error("Category not found");
-    }
-
-    return category;
-  } catch (error) {
-    console.error("Error fetching category by ID:", error);
-    throw new Error("Failed to fetch category");
-  }
 }

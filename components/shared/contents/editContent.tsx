@@ -1,45 +1,53 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { createContent } from "@/lib/actions/contentsActions";
+import {  updateContent } from "@/lib/actions/contentsActions";
 import { TerminalIcon, Files } from "lucide-react";
 import Form from "next/form";
 import Link from "next/link";
 import React, { useActionState, useEffect, useRef, useState } from "react";
-import { Category } from "@prisma/client";
+import { Category, Content } from "@prisma/client";
 import { useQuill } from "react-quilljs";
 import "quill/dist/quill.snow.css";
 import Image from "next/image";
 
 interface CreateContentFormProps {
   categories: Partial<Category>[];
+  content : Content
 }
 
 type ImageError = string | null;
 type Preview = string | null;
 
-const CreateContentForm: React.FC<CreateContentFormProps> = ({ categories }) => {
+const EditContentForm: React.FC<CreateContentFormProps> = ({ categories , content }) => {
+
+ const updateCategoryWithId = updateContent.bind(null, content.id)
   const [errorMessage, formAction, isPending] = useActionState(
-    createContent,
-    undefined
-  );
+    updateCategoryWithId , undefined
+   )
+
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { quill, quillRef } = useQuill();
   const [description, setDescription] = useState<string>("");
-  const [preview, setPreview] = useState<Preview>(null);
+  const [preview, setPreview] = useState<Preview>(content.image);
   const [imageError, setImageError] = useState<ImageError>(null);
 
   const MAX_FILE_SIZE = 5 * 1024 * 1024;
   const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'] as const;
   type AcceptedImageType = typeof ACCEPTED_IMAGE_TYPES[number];
 
-  useEffect(() => {
+ // Update description state when Quill content changes
+ useEffect(() => {
     if (quill) {
-      quill.on("text-change", () => {
+      quill.on('text-change', () => {
         setDescription(quill.root.innerHTML);
       });
+
+      // Set initial content of Quill
+      quill.clipboard.dangerouslyPasteHTML(content.pitch || '');
+
     }
-  }, [quill]);
+  }, [quill, content.pitch]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -77,7 +85,7 @@ const CreateContentForm: React.FC<CreateContentFormProps> = ({ categories }) => 
             id="categoryId"
             name="categoryId"
             className="peer block w-full cursor-pointer rounded-md border py-2 pl-10 text-sm outline-2"
-            defaultValue=""
+            defaultValue={content.categoryId}
             aria-describedby="category-error"
           >
             <option value="" disabled>Select a category</option>
@@ -103,6 +111,7 @@ const CreateContentForm: React.FC<CreateContentFormProps> = ({ categories }) => 
             type="text"
             placeholder="Enter content title"
             className="peer block w-full rounded-md border py-2 pl-10 text-base outline-2"
+            defaultValue={content.title}
           />
           <TerminalIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2" />
         </div>
@@ -127,6 +136,7 @@ const CreateContentForm: React.FC<CreateContentFormProps> = ({ categories }) => 
             type="text"
             placeholder="Enter content URL"
             className="peer block w-full rounded-md border py-2 pl-10 text-base outline-2"
+            defaultValue={content.url}
           />
           <TerminalIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2" />
         </div>
@@ -165,7 +175,7 @@ const CreateContentForm: React.FC<CreateContentFormProps> = ({ categories }) => 
       </div>
 
       {/* Image Upload */}
-      <div className="my-4">
+      <div className="mb-4">
         <label htmlFor="image" className="mb-2 block text-sm font-medium">
           Content image
         </label>
@@ -174,7 +184,7 @@ const CreateContentForm: React.FC<CreateContentFormProps> = ({ categories }) => 
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="bg-blue-700 hover:bg-blue-200 px-4 py-2 rounded-lg border-2 border-dashed border-gray-300 flex items-center gap-2"
+              className="bg-blue-700 hover:bg-gray-200 px-4 py-2 rounded-lg border-2 border-dashed border-blue-300 flex items-center gap-2"
             >
               <TerminalIcon className="h-5 w-5" />
               Upload Image
@@ -196,7 +206,7 @@ const CreateContentForm: React.FC<CreateContentFormProps> = ({ categories }) => 
 
           {preview && (
             <div className="w-1/3 aspect-video rounded-lg overflow-hidden border-2 border-gray-200">
-              <Image width={300} height={300}
+              <Image width={150} height={150}
                 src={preview}
                 alt="Preview"
                 className="w-full h-full object-fill"
@@ -217,10 +227,10 @@ const CreateContentForm: React.FC<CreateContentFormProps> = ({ categories }) => 
       <Button variant="outline" asChild>
         <Link href="/dashboard/contents">Cancel</Link>
       </Button>
-      <Button type="submit">Create Content</Button>
+      <Button type="submit">Edit Content</Button>
     </div>
   </Form>
   );
 };
 
-export default CreateContentForm;
+export default EditContentForm;

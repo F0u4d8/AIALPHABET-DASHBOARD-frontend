@@ -19,9 +19,9 @@ export default function EditCategiryForm({
     category: Category
   
 }) {
-  const updateInvoiceWithId = updateCategory.bind(null, category.id)
+  const updateCategoryWithId = updateCategory.bind(null, category.id)
   const [errorMessage, formAction, isPending] = useActionState(
-    updateInvoiceWithId , undefined
+    updateCategoryWithId , undefined
    
        )
  

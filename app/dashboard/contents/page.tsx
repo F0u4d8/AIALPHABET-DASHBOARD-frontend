@@ -36,7 +36,7 @@ export default async function Page({
         <h1 className={`${lusitana.className} text-2xl`}>Contents</h1>
       </div>
 <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
-<Search href="contents" placeholder="Search categories..." query={query} />
+<Search href="contents" placeholder="Search contents ..." query={query} />
         <Button asChild>
           <Link href="/dashboard/contents/create">
             <span className="hidden md:block">Create Content</span>

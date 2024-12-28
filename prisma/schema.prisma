@@ -44,6 +44,7 @@ model QRCode {
   id        String   @id @default(uuid())
   code      String   @unique
   createdAt DateTime @default(now())
+  copied    Boolean  @default(false)
 }
 
 model Category {

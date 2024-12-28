@@ -1,4 +1,4 @@
-import { boolean, number, object, string  } from "zod";
+import { boolean, number, object, string ,any  } from "zod";
 
 export const signUpSchema = object({
  
@@ -33,12 +33,8 @@ export const contentSchema = object({
   pitch: string({ required_error: "content pitch is required" }) , 
   categoryId: string({ required_error: "category id is required" }),
   url: string({ required_error: "content url is required" }).url("Invalid url"),
-  image: string({ required_error: "content image is required" }).url("Invalid image"),
-  
-
+  image: any({ required_error: "content image is required" }), // Changed from URL to file
 });
-
-
 
 export const todoSchema = object({
   title: string({ required_error: "Title is required" }),

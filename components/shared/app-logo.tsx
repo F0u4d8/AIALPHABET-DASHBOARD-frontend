@@ -11,12 +11,11 @@ export default function AppLogo() {
       >
         <Image
           src="/logo.png"
-          width={32}
-          height={32}
+          width={200}
+          height={200}
           alt={`${APP_NAME} logo`}
           priority
         />
-        <span className="text-xl">{APP_NAME}</span>
       </div>
     </Link>
   )
