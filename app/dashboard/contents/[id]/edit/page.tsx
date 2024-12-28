@@ -10,8 +10,8 @@ export const metadata: Metadata = {
   title: 'Edit Content',
 }
 
-export default async function Page({ params }: { params: { id: string } }) {
-  const id = params.id
+export default async function Page({ params }: { params: Promise<{ id: string }>   }) {
+  const id = (await params).id;
   const [content , categories] = await Promise.all([
     fetchContentById(id),fetchCategories()
   ])

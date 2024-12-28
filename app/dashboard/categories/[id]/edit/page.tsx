@@ -9,8 +9,8 @@ export const metadata: Metadata = {
   title: 'Edit Category',
 }
 
-export default async function Page({ params }: { params: { id: string } }) {
-  const id = params.id
+export default async function Page ( { params }: { params: Promise<{ id: string }>   }) {
+  const id = (await params).id;
   const [category] = await Promise.all([
     fetchCategoryById(id)
   ])
@@ -23,10 +23,10 @@ export default async function Page({ params }: { params: { id: string } }) {
     <main>
       <Breadcrumbs
         breadcrumbs={[
-          { label: 'Invoices', href: '/dashboard/invoices' },
+          { label: 'Categories', href: '/dashboard/categories' },
           {
-            label: 'Edit Invoice',
-            href: `/dashboard/invoices/${id}/edit`,
+            label: 'Edit Category',
+            href: `/dashboard/categories/${id}/edit`,
             active: true,
           },
         ]}
