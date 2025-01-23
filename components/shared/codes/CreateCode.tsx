@@ -20,7 +20,7 @@ import { Label } from "@/components/ui/label";
 import Form from "next/form";
 import { Book } from "@prisma/client";
 
-export default function CreateCode({books} : {books : Book[]}) {
+export default function CreateCode({books} : {books : Partial<Book>[]}) {
   const [open, setOpen] = useState(false);
 
 

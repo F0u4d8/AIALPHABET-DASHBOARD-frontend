@@ -14,7 +14,7 @@ import { QRCode as Code } from '@prisma/client';
 
 
 interface CodesTableProps {
-  codes: Code[];
+  codes: Partial<Code>[];
   onUpdateStatus: (ids: string[]) => Promise<void>;
 }
 
@@ -36,7 +36,7 @@ const CodesTable: React.FC<CodesTableProps> = ({ codes, onUpdateStatus }) => {
     if (selectedCodes.size === codes.length) {
       setSelectedCodes(new Set());
     } else {
-      setSelectedCodes(new Set(codes.map(code => code.id)));
+      setSelectedCodes(new Set(codes.map(code => code.id!)));
     }
   };
 
@@ -51,10 +51,10 @@ const CodesTable: React.FC<CodesTableProps> = ({ codes, onUpdateStatus }) => {
   };
 
   const exportToExcel = (): void => {
-    const selectedData = codes.filter(code => selectedCodes.has(code.id));
+    const selectedData = codes.filter(code => selectedCodes.has(code.id!));
     const ws = XLSX.utils.json_to_sheet(selectedData.map(code => ({
       Code: code.code,
-      CreatedAt: new Date(code.createdAt).toLocaleDateString(),
+      CreatedAt: new Date(code.createdAt!).toLocaleDateString(),
       Status: code.copied ? 'Copied' : 'Pending'
     })));
     const wb = XLSX.utils.book_new();
@@ -86,7 +86,7 @@ const CodesTable: React.FC<CodesTableProps> = ({ codes, onUpdateStatus }) => {
   const exportToQR = async (): Promise<void> => {
     setIsExporting(true);
     try {
-      const selectedData = codes.filter(code => selectedCodes.has(code.id));
+      const selectedData = codes.filter(code => selectedCodes.has(code.id!));
       const zip = new JSZip();
       
       const qrFolder = zip.folder("qr-codes");
@@ -94,7 +94,7 @@ const CodesTable: React.FC<CodesTableProps> = ({ codes, onUpdateStatus }) => {
       
       await Promise.all(selectedData.map(async (code) => {
         try {
-          const svgContent = await generateQRCodeSVG(code.code);
+          const svgContent = await generateQRCodeSVG(code.code!);
           qrFolder.file(`${code.code}.svg`, svgContent);
         } catch (error) {
           console.error(`Error generating QR code for ${code.code}:`, error);
@@ -161,13 +161,13 @@ const CodesTable: React.FC<CodesTableProps> = ({ codes, onUpdateStatus }) => {
                   <div className="flex items-center gap-3">
                     <input
                       type="checkbox"
-                      checked={selectedCodes.has(code.id)}
-                      onChange={() => toggleSelect(code.id)}
+                      checked={selectedCodes.has(code.id!)}
+                      onChange={() => toggleSelect(code.id!)}
                       className="h-4 w-4 rounded border-gray-300"
                     />
                     <div>
                       <div className="mb-2 flex items-center">
-                        <p>{new Date(code.createdAt).toLocaleDateString()}</p>
+                        <p>{new Date(code.createdAt!).toLocaleDateString()}</p>
                       </div>
                       <p className="text-sm">{code.code}</p>
                     </div>
@@ -188,7 +188,7 @@ const CodesTable: React.FC<CodesTableProps> = ({ codes, onUpdateStatus }) => {
                         </>
                       )}
                     </Badge>
-                    <DeleteCode id={code.id} />
+                    <DeleteCode id={code.id!} />
                   </div>
                 </div>
               </div>
@@ -229,8 +229,8 @@ const CodesTable: React.FC<CodesTableProps> = ({ codes, onUpdateStatus }) => {
                   <td className="whitespace-nowrap py-3 pl-6 pr-3">
                     <input
                       type="checkbox"
-                      checked={selectedCodes.has(code.id)}
-                      onChange={() => toggleSelect(code.id)}
+                      checked={selectedCodes.has(code.id!)}
+                      onChange={() => toggleSelect(code.id!)}
                       className="h-4 w-4 rounded border-gray-300"
                     />
                   </td>
@@ -238,7 +238,7 @@ const CodesTable: React.FC<CodesTableProps> = ({ codes, onUpdateStatus }) => {
                     <p>{code.code}</p>
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
-                    {new Date(code.createdAt).toLocaleDateString()}
+                    {new Date(code.createdAt!).toLocaleDateString()}
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
                     <Badge variant={code.copied ? 'secondary' : 'default'}>
@@ -257,7 +257,7 @@ const CodesTable: React.FC<CodesTableProps> = ({ codes, onUpdateStatus }) => {
                   </td>
                   <td className="whitespace-nowrap py-3 pl-6 pr-3">
                     <div className="flex justify-end gap-3">
-                      <DeleteCode id={code.id} />
+                      <DeleteCode id={code.id!} />
                     </div>
                   </td>
                 </tr>
