@@ -49,7 +49,7 @@ export default function CreateCode({books} : {books : Partial<Book>[]}) {
               </SelectTrigger>
               <SelectContent>
               {books.map((book) => (
-                <SelectItem key={book.id} value={book.id}>
+                <SelectItem key={book.id} value={book.id!}>
                   {book.title}
                 </SelectItem>
               ))}
