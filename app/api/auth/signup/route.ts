@@ -1,23 +1,21 @@
-
-
-// app/api/auth/signup/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
-import {  signUpSchema } from '@/lib/zodSchemas';
+import { signUpSchema } from '@/lib/zodSchemas';
 import prisma from '@/lib/db';
 import { generateToken } from '@/lib/tokens/generateTokens';
-
-
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email,password, qrCode } = await signUpSchema.parseAsync(body);
+    const { email, password, qrCode } = await signUpSchema.parseAsync(body);
 
-    // Verify QR Code
+    // Verify QR Code and get associated book permission
     const qrCodeRecord = await prisma.qRCode.findUnique({
-      where: { code: qrCode }
+      where: { code: qrCode },
+      include: {
+        book: true
+      }
     });
 
     if (!qrCodeRecord) {
@@ -37,33 +35,41 @@ export async function POST(request: NextRequest) {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create user
+    // Create user with the book's permission
     const newUser = await prisma.user.create({
       data: {
         email,
-        password: hashedPassword
+        password: hashedPassword,
+        permission: qrCodeRecord.book.permission,
       }
     });
 
-    // Delete used QR code
-    await prisma.qRCode.delete({
-      where: { id: qrCodeRecord.id }
+    // Mark QR code as used and record usage
+    await prisma.qRCode.update({
+      where: { id: qrCodeRecord.id },
+      data: {
+        used: true,
+        usedAt: new Date(),
+        
+      }
     });
+
     const { password: _, ...userWithoutPassword } = newUser;
     // Generate JWT token
     const token = generateToken(userWithoutPassword);
 
- 
     return NextResponse.json({
-        token,
-        requireProfileSetup: true
-      }, { status: 201 });
+      token,
+      requireProfileSetup: true,
+      permission: qrCodeRecord.book.permission
+    }, { status: 201 });
+
   } catch (error) {
     console.error('Signup error:', error);
-    return NextResponse.json({ 
-      error: error instanceof z.ZodError 
-        ? error.errors[0].message 
-        : 'Signup failed' 
+    return NextResponse.json({
+      error: error instanceof z.ZodError
+        ? error.errors[0].message
+        : 'Signup failed'
     }, { status: 500 });
   }
 }

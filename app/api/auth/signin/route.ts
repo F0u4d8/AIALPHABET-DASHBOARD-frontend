@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
     // Find user by email
     const user = await prisma.user.findUnique({
       where: { email },
+      include : {profile : true}
     });
 
     if (!user) {
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
     const token = generateToken(userWithoutPassword, existingProfile);
     return NextResponse.json(
       {
-        token,
+        token,user : userWithoutPassword
       },
       { status: 201 }
     );

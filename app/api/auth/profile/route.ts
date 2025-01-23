@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import jwt from 'jsonwebtoken';
 import { generateToken } from "@/lib/tokens/generateTokens";
-import { UserRole } from "@prisma/client";
+import { Permission, UserRole } from "@prisma/client";
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
 
@@ -54,14 +54,18 @@ const userId = await verifyMobileToken(mobileToken);
             const decoded = jwt.verify(mobileToken, JWT_SECRET) as { 
                   id: string, 
                   email: string, 
-                  role: UserRole 
+                  role: UserRole  ,
+                  permission : Permission[]
                 };
             
 
       const token = generateToken(decoded ,newProfile);
+      const user = await prisma.user.findUnique({where : {id : userId} , select : {id : true , email : true , permission : true , role : true , profile : true } })
+
+
       return NextResponse.json({
         message: 'Profile created successfully',
-      token
+      token , user
       }, { status: 201 });
   
     } catch (error) {

@@ -29,6 +29,7 @@ model User {
   profile   UserProfile?
   // Add other user fields as needed
   todos     Todo[]
+  permission Permission[]
 }
 
 model UserProfile {
@@ -39,12 +40,34 @@ model UserProfile {
   avatarUrl  String   @default("avatars/avatar1.jpg")
 }
 
+enum Permission {
+  CHAT
+  GOALS
+  READ
+  FOCUS
+  ALL
+}
+
+model Book {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  permission  Permission[]
+  image       String?      @default("/placeholder-book.jpg")
+  qrCodes     QRCode[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
 
 model QRCode {
   id        String   @id @default(uuid())
   code      String   @unique
+  bookId    String
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   copied    Boolean  @default(false)
+  used      Boolean  @default(false)
+  usedAt    DateTime?
 }
 
 model Category {
@@ -59,9 +82,12 @@ model Content {
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   title      String
-  url        String
+  appStoreUrl        String
+  playStoreUrl       String
   pitch      String   @db.Text
   image      String
+
+
 }
 
 model Todo {
@@ -81,4 +107,10 @@ model Todo {
   // 1: 'مهم'
   // 2: 'عادي'
   // 3: 'غير مهم'
+}
+
+model AiModel {
+  id String @id @default(cuid())
+  name String
+  apiKey String
 }

@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import prisma from '../db';
-import { UserProfile, UserRole } from '@prisma/client';
+import { Permission, UserProfile, UserRole } from '@prisma/client';
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
 
@@ -13,6 +13,7 @@ export async function verifyMobileToken(token: string ): Promise<string | null> 
             id: string, 
             email: string, 
             role: UserRole ,
+            permission : Permission ,
             profile? : Partial <UserProfile> 
           };
       

@@ -124,30 +124,57 @@ const EditContentForm: React.FC<CreateContentFormProps> = ({ categories , conten
         )}
       </div>
 
-      {/* URL Input */}
-      <div className="mb-4">
-        <label htmlFor="url" className="mb-2 block text-sm font-medium">
-          Content URL
+    {/* URL Input */}
+    <div className="mb-4">
+        <label htmlFor="appStoreUrl" className="mb-2 block text-sm font-medium">
+          App Store URL
         </label>
         <div className="relative">
           <input
-            id="url"
-            name="url"
+            id="appStoreUrl"
+            name="appStoreUrl"
             type="text"
-            placeholder="Enter content URL"
+            placeholder="Enter content app store URL"
             className="peer block w-full rounded-md border py-2 pl-10 text-base outline-2"
-            defaultValue={content.url}
+            defaultValue={content.appStoreUrl}
           />
           <TerminalIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2" />
         </div>
-        {errorMessage?.errors?.url && (
+        {errorMessage?.errors?.appStoreUrl && (
           <div className="mt-2 text-sm text-red-500">
-            {errorMessage.errors.url.map((error) => (
+            {errorMessage.errors.appStoreUrl.map((error) => (
               <p key={error}>{error}</p>
             ))}
           </div>
         )}
       </div>
+
+
+ {/* URL Input */}
+ <div className="mb-4">
+        <label htmlFor="playStoreUrl" className="mb-2 block text-sm font-medium">
+          Play Store URL
+        </label>
+        <div className="relative">
+          <input
+            id="playStoreUrl"
+            name="playStoreUrl"
+            type="text"
+            placeholder="Enter content play store URL"
+            className="peer block w-full rounded-md border py-2 pl-10 text-base outline-2"
+            defaultValue={content.playStoreUrl}
+          />
+          <TerminalIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2" />
+        </div>
+        {errorMessage?.errors?.playStoreUrl && (
+          <div className="mt-2 text-sm text-red-500">
+            {errorMessage.errors.playStoreUrl.map((error) => (
+              <p key={error}>{error}</p>
+            ))}
+          </div>
+        )}
+      </div>
+
 
       {/* Rich Text Editor */}
       <div className="mb-4">

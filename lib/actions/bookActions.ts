@@ -1,25 +1,24 @@
 "use server";
 
 import prisma from "../db";
-import { contentSchema } from "../zodSchemas";
+import { bookSchema } from "../zodSchemas";
+import fs from "fs";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import fs from "fs";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 
 const ITEMS_PER_PAGE = process.env.ITEMS_PER_PAGE;
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
+const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "books");
 
-export async function fetchContentsPages(query: string | null) {
+export async function fetchBooksPages(query: string | null) {
   try {
-    const count = await prisma.content.count({
+    const count = await prisma.book.count({
       where: query
         ? {
             OR: [
               { title: { contains: query, mode: "insensitive" } },
-              { pitch: { contains: query, mode: "insensitive" } },
-              { category: { name: { contains: query, mode: "insensitive" } } },
+              { description: { contains: query, mode: "insensitive" } },
             ],
           }
         : {},
@@ -33,33 +32,26 @@ export async function fetchContentsPages(query: string | null) {
   }
 }
 
-export async function fetchFilteredContents(
+export async function fetchFilteredBooks(
   query: string | null,
   currentPage: number
 ) {
   try {
     const offset = (currentPage - 1) * Number(ITEMS_PER_PAGE);
 
-    const data = await prisma.content.findMany({
+    const data = await prisma.book.findMany({
       select: {
         id: true,
         title: true,
-        pitch: true,
-        category: {
-          select: {
-            name: true,
-          },
-        },
+        description: true,
+        permission: true,
         image: true,
-        appStoreUrl: true,
-        playStoreUrl: true,
       },
       where: query
         ? {
             OR: [
               { title: { contains: query, mode: "insensitive" } },
-              { pitch: { contains: query, mode: "insensitive" } },
-              { category: { name: { contains: query, mode: "insensitive" } } },
+              { description: { contains: query, mode: "insensitive" } },
             ],
           }
         : {},
@@ -76,14 +68,13 @@ export async function fetchFilteredContents(
     throw new Error("Failed to fetch categories.");
   }
 }
-export async function createContent(prevState: any, formData: FormData) {
+
+export async function createBook(prevState: any, formData: FormData) {
   // Validate form fields using Zod
-  const validatedFields = contentSchema.safeParse({
+  const validatedFields = bookSchema.safeParse({
     title: formData.get("title"),
-    pitch: formData.get("pitch"),
-    categoryId: formData.get("categoryId"),
-    appStoreUrl: formData.get("appStoreUrl"),
-    playStoreUrl: formData.get("playStoreUrl"),
+    description: formData.get("pitch"),
+    permission: formData.getAll("permission"),
     image: formData.get("image"),
   });
 
@@ -92,12 +83,12 @@ export async function createContent(prevState: any, formData: FormData) {
     console.log(validatedFields.error.flatten().fieldErrors);
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: "Missing Fields. Failed to Create Content.",
+      message: "Missing Fields. Failed to Create a Book.",
     };
   }
 
   // Prepare data for insertion
-  const { title, categoryId, image, pitch, appStoreUrl, playStoreUrl } = validatedFields.data;
+  const { title, permission, image, description } = validatedFields.data;
 
   // Ensure the upload directory exists
   if (!fs.existsSync(UPLOAD_DIR)) {
@@ -111,16 +102,15 @@ export async function createContent(prevState: any, formData: FormData) {
   const imageBuffer = Buffer.from(await imageFile.arrayBuffer());
   fs.writeFileSync(imagePath, imageBuffer);
 
-  const imageUrl = `/uploads/${imageFileName}`;
+  const imageUrl = `/uploads/books/${imageFileName}`;
 
   try {
-    await prisma.content.create({
+    await prisma.book.create({
       data: {
         title,
-        pitch,
+        description,
         image: imageUrl,
-       appStoreUrl , playStoreUrl ,
-        categoryId,
+        permission: permission
       },
     });
   } catch (error) {
@@ -166,15 +156,15 @@ export async function createContent(prevState: any, formData: FormData) {
   }
 
   // Success case
-  revalidatePath("/dashboard/contents");
-  redirect("/dashboard/contents");
+  revalidatePath("/dashboard/books");
+  redirect("/dashboard/books")
 }
 
 
 
-export async function deleteContent(id: string) {
+export async function deleteBook(id: string) {
   try {
-    await prisma.content.delete({
+    await prisma.book.delete({
       where: {
         id,
       },
@@ -185,18 +175,17 @@ export async function deleteContent(id: string) {
   }
 
   // Success case
-  revalidatePath("/dashboard/contents");
-  redirect("/dashboard/contents");
+  revalidatePath("/dashboard/books");
 }
 
-export async function fetchContentById(id: string) {
+export async function fetchBookById(id: string) {
   try {
-    const category = await prisma.content.findUnique({
+    const category = await prisma.book.findUnique({
       where: { id },
     });
 
     if (!category) {
-      throw new Error("Content not found");
+      throw new Error("book not found");
     }
 
     return category;
@@ -206,14 +195,13 @@ export async function fetchContentById(id: string) {
   }
 }
 
-export async function updateContent(id: string, prevState: any, formData: FormData) {
+
+export async function updateBook(id: string, prevState: any, formData: FormData) {
   // Validate form fields using Zod
-  const validatedFields = contentSchema.safeParse({
+  const validatedFields = bookSchema.safeParse({
     title: formData.get("title"),
-    pitch: formData.get("pitch"),
-    categoryId: formData.get("categoryId"),
-appStoreUrl: formData.get("appStoreUrl"),
-playStoreUrl: formData.get("playStoreUrl"),
+    description: formData.get("pitch"),
+    permission: formData.getAll("permission"),
     image: formData.get("image"),
   });
 
@@ -222,26 +210,25 @@ playStoreUrl: formData.get("playStoreUrl"),
     console.log(validatedFields.error.flatten().fieldErrors);
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: "Missing Fields. Failed to Update Content.",
+      message: "Missing Fields. Failed to Update Book.",
     };
   }
 
   // Prepare data for update
-  const { title, categoryId, image, pitch, appStoreUrl, playStoreUrl } = validatedFields.data;
+  const { title, permission, image, description } = validatedFields.data;
 
   // Fetch the existing content to get the current image URL
-  const existingContent = await prisma.content.findUnique({
+  const existingBook = await prisma.book.findUnique({
     where: { id },
   });
 
-  if (!existingContent) {
+  if (!existingBook) {
     return {
-      message: "Content not found.",
+      message: "Book not found.",
     };
   }
 
-  let imageUrl = existingContent.image;
-console.log(imageUrl , image);
+  let imageUrl = existingBook.image;
 
   // If a new image is provided, delete the old one and save the new one
   if (image) {
@@ -250,11 +237,11 @@ console.log(imageUrl , image);
       fs.mkdirSync(UPLOAD_DIR, { recursive: true });
     }
 
-    // Delete the old image
-    const oldImagePath = path.join(process.cwd(), "public", existingContent.image);
+    const oldImagePath = path.join(process.cwd(), "public", existingBook.image as string);
     if (fs.existsSync(oldImagePath)) {
       fs.unlinkSync(oldImagePath);
     }
+
 
     // Save the new image locally
     const imageFile = image as File;
@@ -263,18 +250,17 @@ console.log(imageUrl , image);
     const imageBuffer = Buffer.from(await imageFile.arrayBuffer());
     fs.writeFileSync(imagePath, imageBuffer);
 
-    imageUrl = `/uploads/${imageFileName}`;
+    imageUrl = `/uploads/books/${imageFileName}`;
   }
 
   try {
-    await prisma.content.update({
+    await prisma.book.update({
       where: { id },
       data: {
         title,
-        pitch,
+        description,
         image: imageUrl,
-        appStoreUrl , playStoreUrl ,
-        categoryId,
+        permission,
       },
     });
   } catch (error) {
@@ -289,7 +275,7 @@ console.log(imageUrl , image);
       // Unique constraint violation
       const field = prismaError.meta?.target?.[0] || "field";
       return {
-        message: `A content with this ${field} already exists.`,
+        message: `A Book with this ${field} already exists.`,
         errors: {
           [field]: [`This ${field} is already taken.`],
         },

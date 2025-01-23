@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { Files, HomeIcon, QrCode  } from 'lucide-react'
+import { Files, HomeIcon, QrCode ,BookAIcon } from 'lucide-react'
 
 const links = [
   { name: 'Home', href: '/dashboard', icon: HomeIcon },
@@ -19,6 +19,8 @@ const links = [
     icon: Files,
   },
   { name: 'codes', href: '/dashboard/codes', icon: QrCode },
+  { name: 'books', href: '/dashboard/books', icon: BookAIcon },
+  { name: 'settings', href: '/dashboard/settings', icon: BookAIcon },
 ]
 
 export default function NavLinks() {
@@ -35,7 +37,7 @@ export default function NavLinks() {
             className={cn(
               buttonVariants({ variant: 'ghost' }),
               'justify-start',
-              pathname === link.href ? '' : 'text-muted-foreground'
+              pathname === link.href ? '' : 'text-muted-foreground p-1'
             )}
           >
             <LinkIcon className="mr-2 h-6 w-6" />

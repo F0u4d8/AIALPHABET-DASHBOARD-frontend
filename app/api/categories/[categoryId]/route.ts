@@ -15,7 +15,7 @@ console.log(categoryId);
         include: {contents :{
           select: {
             id: true,
-            image: true ,url :true , title:true
+            image: true ,appStoreUrl :true , playStoreUrl :true , title:true
           }
         }}
       });

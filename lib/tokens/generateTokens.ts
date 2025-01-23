@@ -1,4 +1,4 @@
-import { User, UserProfile } from "@prisma/client";
+import { User, UserProfile } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
@@ -8,6 +8,7 @@ export function generateToken(user: Partial<User>, profile?: Partial <UserProfil
   const payload: Record<string, any> = {
     id: user.id,
     email: user.email,
+    permission : user.permission
   };
 
   // Include profile data if provided
