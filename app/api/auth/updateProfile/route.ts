@@ -1,13 +1,10 @@
 import prisma from "@/lib/db";
 import { verifyMobileToken } from "@/lib/tokens/verifyTokens";
-import { profileSchema, profileUpdateSchema } from "@/lib/zodSchemas";
+import {  profileUpdateSchema } from "@/lib/zodSchemas";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import jwt from 'jsonwebtoken';
 import { generateToken } from "@/lib/tokens/generateTokens";
-import { Permission, UserRole } from "@prisma/client";
 
-const JWT_SECRET = process.env.JWT_SECRET || '';
 
 
 export async function PUT(request: NextRequest) {
@@ -34,6 +31,9 @@ const userId = await verifyMobileToken(mobileToken);
       const body = await request.json();
       const { username, avatarUrl , email } = await profileUpdateSchema.parseAsync(body);
   
+
+
+
       const newProfile = await prisma.user.update({
         where : {
             id : userId

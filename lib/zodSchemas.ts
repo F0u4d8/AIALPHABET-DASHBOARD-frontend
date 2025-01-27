@@ -16,18 +16,14 @@ export const signInSchema = object({
 
 export const profileSchema = object({
   username: string({ required_error: "username is required" }),
-  avatarUrl: string({ required_error: "avatar is required" }).url(
-    "Invalid avatar"
-  ),
+  avatarUrl: string({ required_error: "avatar is required" }),
 });
 
 
 export const profileUpdateSchema = object({
   username: string({ required_error: "username is required" }),
-  avatarUrl: string({ required_error: "avatar is required" }).url(
-    "Invalid avatar"
-  ),
-  email : string({required_error : "email is required"}).email("Invalid email")
+  avatarUrl: string({ required_error: "avatar is required" }),
+  email: string({ required_error: "email is required" }).email("Invalid email"),
 });
 
 export const categorySchema = object({
