@@ -23,6 +23,7 @@ const CreateBookForm = () => {
   const [description, setDescription] = useState<string>("");
   const [preview, setPreview] = useState<Preview>(null);
   const [imageError, setImageError] = useState<ImageError>(null);
+  const [useImageUrl, setUseImageUrl] = useState(false);
 
   const MAX_FILE_SIZE = 5 * 1024 * 1024;
   const ACCEPTED_IMAGE_TYPES = [
@@ -154,41 +155,75 @@ const CreateBookForm = () => {
           <label htmlFor="image" className="mb-2 block text-sm font-medium">
             Book image
           </label>
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-full flex justify-center">
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="bg-blue-700 hover:bg-blue-200 px-4 py-2 rounded-lg border-2 border-dashed border-gray-300 flex items-center gap-2"
-              >
-                <TerminalIcon className="h-5 w-5" />
-                Upload Image
-              </button>
+
+          {/* Toggle between URL and Upload */}
+          <div className="flex gap-4 mb-4">
+            <Button
+              type="button"
+              variant={useImageUrl ? "outline" : "default"}
+              onClick={() => setUseImageUrl(false)}
+            >
+              Upload Image
+            </Button>
+            <Button
+              type="button"
+              variant={useImageUrl ? "default" : "outline"}
+              onClick={() => setUseImageUrl(true)}
+            >
+              Image URL
+            </Button>
+          </div>
+
+          {useImageUrl ? (
+            // Image URL Input
+            <div className="relative">
               <input
-                ref={fileInputRef}
-                id="image"
-                name="image"
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="hidden"
+                id="imageUrl"
+                name="imageUrl"
+                type="url"
+                placeholder="Enter image URL"
+                className="peer block w-full rounded-md border py-2 pl-10 text-base outline-2"
               />
+              <TerminalIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2" />
             </div>
-
-            {imageError && <p className="text-sm text-red-500">{imageError}</p>}
-
-            {preview && (
-              <div className="w-1/3 aspect-video rounded-lg overflow-hidden border-2 border-gray-200">
-                <Image
-                  width={300}
-                  height={300}
-                  src={preview}
-                  alt="Preview"
-                  className="w-full h-full object-fill"
+          ) : (
+            // Image Upload Input
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-full flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="bg-blue-700 hover:bg-gray-200 px-4 py-2 rounded-lg border-2 border-dashed border-blue-300 flex items-center gap-2"
+                >
+                  <TerminalIcon className="h-5 w-5" />
+                  Upload Image
+                </button>
+                <input
+                  ref={fileInputRef}
+                  id="image"
+                  name="image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
                 />
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
+          {imageError && <p className="text-sm text-red-500">{imageError}</p>}
+
+          {preview && !useImageUrl && (
+            <div className="w-1/3 aspect-video rounded-lg overflow-hidden border-2 border-gray-200 mt-4">
+              <Image
+                width={300}
+                height={300}
+                src={preview}
+                alt="Preview"
+                className="w-full h-full object-fill"
+              />
+            </div>
+          )}
         </div>
 
         {/* Form Error Messages */}

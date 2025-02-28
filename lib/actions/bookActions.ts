@@ -70,47 +70,55 @@ export async function fetchFilteredBooks(
 }
 
 export async function createBook(prevState: any, formData: FormData) {
+  // Get both image file and URL
+  const imageFile = formData.get("image") as File;
+  const imageUrl = formData.get("imageUrl") as string;
+
   // Validate form fields using Zod
   const validatedFields = bookSchema.safeParse({
     title: formData.get("title"),
     description: formData.get("pitch"),
     permission: formData.getAll("permission"),
-    image: formData.get("image"),
+    image: imageFile,
+    imageUrl: imageUrl,
   });
 
-  // If form validation fails, return errors early
   if (!validatedFields.success) {
-    console.log(validatedFields.error.flatten().fieldErrors);
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: "Missing Fields. Failed to Create a Book.",
+      message: "Missing Fields. Failed to Create Book.",
     };
   }
 
-  // Prepare data for insertion
-  const { title, permission, image, description } = validatedFields.data;
+  const { title, permission, description } = validatedFields.data;
 
-  // Ensure the upload directory exists
-  if (!fs.existsSync(UPLOAD_DIR)) {
-    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+  let finalImageUrl = "/placeholder-book.jpg";
+
+  // Handle image upload or URL
+  if (imageUrl) {
+    finalImageUrl = imageUrl;
+  } else if (imageFile && imageFile.size > 0) {
+    // Ensure the upload directory exists
+    if (!fs.existsSync(UPLOAD_DIR)) {
+      fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+    }
+
+    // Save the image locally
+    const imageFileName = `${uuidv4()}-${imageFile.name}`;
+    const imagePath = path.join(UPLOAD_DIR, imageFileName);
+    const imageBuffer = Buffer.from(await imageFile.arrayBuffer());
+    fs.writeFileSync(imagePath, imageBuffer);
+
+    finalImageUrl = `/uploads/books/${imageFileName}`;
   }
-
-  // Save the image locally
-  const imageFile = image as File;
-  const imageFileName = `${uuidv4()}-${imageFile.name}`;
-  const imagePath = path.join(UPLOAD_DIR, imageFileName);
-  const imageBuffer = Buffer.from(await imageFile.arrayBuffer());
-  fs.writeFileSync(imagePath, imageBuffer);
-
-  const imageUrl = `/uploads/books/${imageFileName}`;
 
   try {
     await prisma.book.create({
       data: {
         title,
         description,
-        image: imageUrl,
-        permission: permission,
+        image: finalImageUrl,
+        permission,
       },
     });
   } catch (error) {
@@ -193,68 +201,59 @@ export async function fetchBookById(id: string) {
   }
 }
 
-export async function updateBook(
-  id: string,
-  prevState: any,
-  formData: FormData
-) {
+export async function updateBook(id: string, prevState: any, formData: FormData) {
+  // Get both image file and URL
+  const imageFile = formData.get("image") as File;
+  const imageUrl = formData.get("imageUrl") as string;
+
   // Validate form fields using Zod
   const validatedFields = bookSchema.safeParse({
     title: formData.get("title"),
     description: formData.get("pitch"),
     permission: formData.getAll("permission"),
-    image: formData.get("image"),
+    image: imageFile,
+    imageUrl: imageUrl,
   });
 
-  // If form validation fails, return errors early
   if (!validatedFields.success) {
-    console.log(validatedFields.error.flatten().fieldErrors);
     return {
       errors: validatedFields.error.flatten().fieldErrors,
       message: "Missing Fields. Failed to Update Book.",
     };
   }
 
-  // Prepare data for update
-  const { title, permission, image, description } = validatedFields.data;
+  const { title, permission, description } = validatedFields.data;
 
-  // Fetch the existing content to get the current image URL
+  // Fetch existing book
   const existingBook = await prisma.book.findUnique({
     where: { id },
   });
 
   if (!existingBook) {
-    return {
-      message: "Book not found.",
-    };
+    return { message: "Book not found." };
   }
 
-  let imageUrl = existingBook.image;
+  let finalImageUrl = existingBook.image;
 
-  // If a new image is provided, delete the old one and save the new one
-  if (image) {
-    // Ensure the upload directory exists
-    if (!fs.existsSync(UPLOAD_DIR)) {
-      fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+  // Handle image update
+  if (imageUrl) {
+    finalImageUrl = imageUrl;
+  } else if (imageFile && imageFile.size > 0) {
+    // Delete old image if it exists
+    if (existingBook.image && !existingBook.image.startsWith("http")) {
+      const oldImagePath = path.join(process.cwd(), "public", existingBook.image);
+      if (fs.existsSync(oldImagePath)) {
+        fs.unlinkSync(oldImagePath);
+      }
     }
 
-    const oldImagePath = path.join(
-      process.cwd(),
-      "public",
-      existingBook.image as string
-    );
-    if (fs.existsSync(oldImagePath)) {
-      fs.unlinkSync(oldImagePath);
-    }
-
-    // Save the new image locally
-    const imageFile = image as File;
+    // Save new image
     const imageFileName = `${uuidv4()}-${imageFile.name}`;
     const imagePath = path.join(UPLOAD_DIR, imageFileName);
     const imageBuffer = Buffer.from(await imageFile.arrayBuffer());
     fs.writeFileSync(imagePath, imageBuffer);
 
-    imageUrl = `/uploads/books/${imageFileName}`;
+    finalImageUrl = `/uploads/books/${imageFileName}`;
   }
 
   try {
@@ -263,7 +262,7 @@ export async function updateBook(
       data: {
         title,
         description,
-        image: imageUrl,
+        image: finalImageUrl,
         permission,
       },
     });
@@ -310,6 +309,6 @@ export async function updateBook(
   }
 
   // Success case
-  revalidatePath("/dashboard/contents");
-  redirect("/dashboard/contents");
+  revalidatePath("/dashboard/books");
+  redirect("/dashboard/books");
 }

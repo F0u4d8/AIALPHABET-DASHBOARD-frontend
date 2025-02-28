@@ -220,6 +220,10 @@ export async function updateContent(
   prevState: any,
   formData: FormData
 ) {
+  // Get both image file and URL
+  const imageFile = formData.get("image") as File;
+  const imageUrl = formData.get("imageUrl") as string;
+
   // Validate form fields using Zod
   const validatedFields = contentSchema.safeParse({
     title: formData.get("title"),
@@ -227,7 +231,8 @@ export async function updateContent(
     categoryId: formData.get("categoryId"),
     appStoreUrl: formData.get("appStoreUrl"),
     playStoreUrl: formData.get("playStoreUrl"),
-    image: formData.get("image"),
+    image: imageFile,
+    imageUrl: imageUrl,
   });
 
   // If form validation fails, return errors early
@@ -239,49 +244,43 @@ export async function updateContent(
     };
   }
 
-  // Prepare data for update
-  const { title, categoryId, image, pitch, appStoreUrl, playStoreUrl } =
+  const { title, categoryId, pitch, appStoreUrl, playStoreUrl } =
     validatedFields.data;
 
-  // Fetch the existing content to get the current image URL
+  // Fetch existing content
   const existingContent = await prisma.content.findUnique({
     where: { id },
   });
 
   if (!existingContent) {
-    return {
-      message: "Content not found.",
-    };
+    return { message: "Content not found." };
   }
 
-  let imageUrl = existingContent.image;
-  console.log(imageUrl, image);
+  let finalImageUrl = existingContent.image;
 
-  // If a new image is provided, delete the old one and save the new one
-  if (image) {
-    // Ensure the upload directory exists
-    if (!fs.existsSync(UPLOAD_DIR)) {
-      fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+  // Handle image update
+  if (imageUrl) {
+    finalImageUrl = imageUrl;
+  } else if (imageFile && imageFile.size > 0) {
+    // Delete old image if it exists
+    if (existingContent.image && !existingContent.image.startsWith("http")) {
+      const oldImagePath = path.join(
+        process.cwd(),
+        "public",
+        existingContent.image
+      );
+      if (fs.existsSync(oldImagePath)) {
+        fs.unlinkSync(oldImagePath);
+      }
     }
 
-    // Delete the old image
-    const oldImagePath = path.join(
-      process.cwd(),
-      "public",
-      existingContent.image
-    );
-    if (fs.existsSync(oldImagePath)) {
-      fs.unlinkSync(oldImagePath);
-    }
-
-    // Save the new image locally
-    const imageFile = image as File;
+    // Save new image
     const imageFileName = `${uuidv4()}-${imageFile.name}`;
     const imagePath = path.join(UPLOAD_DIR, imageFileName);
     const imageBuffer = Buffer.from(await imageFile.arrayBuffer());
     fs.writeFileSync(imagePath, imageBuffer);
 
-    imageUrl = `/uploads/${imageFileName}`;
+    finalImageUrl = `/uploads/contents/${imageFileName}`;
   }
 
   try {
@@ -290,10 +289,10 @@ export async function updateContent(
       data: {
         title,
         pitch,
-        image: imageUrl,
+        categoryId,
         appStoreUrl,
         playStoreUrl,
-        categoryId,
+        image: finalImageUrl,
       },
     });
   } catch (error) {
