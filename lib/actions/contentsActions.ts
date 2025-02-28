@@ -9,7 +9,7 @@ import path from "path";
 import { v4 as uuidv4 } from "uuid";
 
 const ITEMS_PER_PAGE = process.env.ITEMS_PER_PAGE;
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
+const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "contents");
 
 export async function fetchContentsPages(query: string | null) {
   try {
@@ -76,7 +76,12 @@ export async function fetchFilteredContents(
     throw new Error("Failed to fetch categories.");
   }
 }
+
 export async function createContent(prevState: any, formData: FormData) {
+  // Get both image file and URL
+  const imageFile = formData.get("image") as File;
+  const imageUrl = formData.get("imageUrl") as string;
+
   // Validate form fields using Zod
   const validatedFields = contentSchema.safeParse({
     title: formData.get("title"),
@@ -84,43 +89,49 @@ export async function createContent(prevState: any, formData: FormData) {
     categoryId: formData.get("categoryId"),
     appStoreUrl: formData.get("appStoreUrl"),
     playStoreUrl: formData.get("playStoreUrl"),
-    image: formData.get("image"),
+    image: imageFile,
+    imageUrl: imageUrl,
   });
 
-  // If form validation fails, return errors early
   if (!validatedFields.success) {
-    console.log(validatedFields.error.flatten().fieldErrors);
     return {
       errors: validatedFields.error.flatten().fieldErrors,
       message: "Missing Fields. Failed to Create Content.",
     };
   }
 
-  // Prepare data for insertion
-  const { title, categoryId, image, pitch, appStoreUrl, playStoreUrl } = validatedFields.data;
+  const { title, pitch, categoryId, appStoreUrl, playStoreUrl } =
+    validatedFields.data;
 
-  // Ensure the upload directory exists
-  if (!fs.existsSync(UPLOAD_DIR)) {
-    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+  let finalImageUrl = "/placeholder-content.jpg";
+
+  // Handle image upload or URL
+  if (imageUrl) {
+    finalImageUrl = imageUrl;
+  } else if (imageFile && imageFile.size > 0) {
+    // Ensure the upload directory exists
+    if (!fs.existsSync(UPLOAD_DIR)) {
+      fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+    }
+
+    // Save the image locally
+    const imageFileName = `${uuidv4()}-${imageFile.name}`;
+    const imagePath = path.join(UPLOAD_DIR, imageFileName);
+    const imageBuffer = Buffer.from(await imageFile.arrayBuffer());
+    fs.writeFileSync(imagePath, imageBuffer);
+
+    finalImageUrl = `/uploads/contents/${imageFileName}`;
   }
-
-  // Save the image locally
-  const imageFile = image as File;
-  const imageFileName = `${uuidv4()}-${imageFile.name}`;
-  const imagePath = path.join(UPLOAD_DIR, imageFileName);
-  const imageBuffer = Buffer.from(await imageFile.arrayBuffer());
-  fs.writeFileSync(imagePath, imageBuffer);
-
-  const imageUrl = `/uploads/${imageFileName}`;
 
   try {
     await prisma.content.create({
       data: {
         title,
         pitch,
-        image: imageUrl,
-       appStoreUrl , playStoreUrl ,
         categoryId,
+        appStoreUrl,
+        playStoreUrl,
+        image: finalImageUrl,
       },
     });
   } catch (error) {
@@ -170,8 +181,6 @@ export async function createContent(prevState: any, formData: FormData) {
   redirect("/dashboard/contents");
 }
 
-
-
 export async function deleteContent(id: string) {
   try {
     await prisma.content.delete({
@@ -206,14 +215,18 @@ export async function fetchContentById(id: string) {
   }
 }
 
-export async function updateContent(id: string, prevState: any, formData: FormData) {
+export async function updateContent(
+  id: string,
+  prevState: any,
+  formData: FormData
+) {
   // Validate form fields using Zod
   const validatedFields = contentSchema.safeParse({
     title: formData.get("title"),
     pitch: formData.get("pitch"),
     categoryId: formData.get("categoryId"),
-appStoreUrl: formData.get("appStoreUrl"),
-playStoreUrl: formData.get("playStoreUrl"),
+    appStoreUrl: formData.get("appStoreUrl"),
+    playStoreUrl: formData.get("playStoreUrl"),
     image: formData.get("image"),
   });
 
@@ -227,7 +240,8 @@ playStoreUrl: formData.get("playStoreUrl"),
   }
 
   // Prepare data for update
-  const { title, categoryId, image, pitch, appStoreUrl, playStoreUrl } = validatedFields.data;
+  const { title, categoryId, image, pitch, appStoreUrl, playStoreUrl } =
+    validatedFields.data;
 
   // Fetch the existing content to get the current image URL
   const existingContent = await prisma.content.findUnique({
@@ -241,7 +255,7 @@ playStoreUrl: formData.get("playStoreUrl"),
   }
 
   let imageUrl = existingContent.image;
-console.log(imageUrl , image);
+  console.log(imageUrl, image);
 
   // If a new image is provided, delete the old one and save the new one
   if (image) {
@@ -251,7 +265,11 @@ console.log(imageUrl , image);
     }
 
     // Delete the old image
-    const oldImagePath = path.join(process.cwd(), "public", existingContent.image);
+    const oldImagePath = path.join(
+      process.cwd(),
+      "public",
+      existingContent.image
+    );
     if (fs.existsSync(oldImagePath)) {
       fs.unlinkSync(oldImagePath);
     }
@@ -273,7 +291,8 @@ console.log(imageUrl , image);
         title,
         pitch,
         image: imageUrl,
-        appStoreUrl , playStoreUrl ,
+        appStoreUrl,
+        playStoreUrl,
         categoryId,
       },
     });

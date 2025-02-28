@@ -19,7 +19,6 @@ export const profileSchema = object({
   avatarUrl: string({ required_error: "avatar is required" }),
 });
 
-
 export const profileUpdateSchema = object({
   username: string({ required_error: "username is required" }),
   avatarUrl: string({ required_error: "avatar is required" }),
@@ -35,10 +34,21 @@ export const contentSchema = object({
   title: string({ required_error: "content title is required" }),
   pitch: string({ required_error: "content pitch is required" }),
   categoryId: string({ required_error: "category id is required" }),
-  appStoreUrl: string({ required_error: "content app store url is required" }).url("Invalid app store url"),
-  playStoreUrl: string({ required_error: "content play store url is required" }).url("Invalid play store url"),
-  image: any({ required_error: "content image is required" }), // Changed from URL to file
-});
+  appStoreUrl: string({
+    required_error: "content app store url is required",
+  }).url("Invalid app store url"),
+  playStoreUrl: string({
+    required_error: "content play store url is required",
+  }).url("Invalid play store url"),
+  image: any().optional(),
+  imageUrl: string().url("Invalid image URL").optional(),
+}).refine(
+  (data) => data.image || data.imageUrl,
+  {
+    message: "Either image file or image URL must be provided",
+    path: ["image"],
+  }
+);
 
 export const todoSchema = object({
   title: string({ required_error: "Title is required" }),

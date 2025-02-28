@@ -110,7 +110,7 @@ export async function createBook(prevState: any, formData: FormData) {
         title,
         description,
         image: imageUrl,
-        permission: permission
+        permission: permission,
       },
     });
   } catch (error) {
@@ -157,10 +157,8 @@ export async function createBook(prevState: any, formData: FormData) {
 
   // Success case
   revalidatePath("/dashboard/books");
-  redirect("/dashboard/books")
+  redirect("/dashboard/books");
 }
-
-
 
 export async function deleteBook(id: string) {
   try {
@@ -195,8 +193,11 @@ export async function fetchBookById(id: string) {
   }
 }
 
-
-export async function updateBook(id: string, prevState: any, formData: FormData) {
+export async function updateBook(
+  id: string,
+  prevState: any,
+  formData: FormData
+) {
   // Validate form fields using Zod
   const validatedFields = bookSchema.safeParse({
     title: formData.get("title"),
@@ -237,11 +238,14 @@ export async function updateBook(id: string, prevState: any, formData: FormData)
       fs.mkdirSync(UPLOAD_DIR, { recursive: true });
     }
 
-    const oldImagePath = path.join(process.cwd(), "public", existingBook.image as string);
+    const oldImagePath = path.join(
+      process.cwd(),
+      "public",
+      existingBook.image as string
+    );
     if (fs.existsSync(oldImagePath)) {
       fs.unlinkSync(oldImagePath);
     }
-
 
     // Save the new image locally
     const imageFile = image as File;
