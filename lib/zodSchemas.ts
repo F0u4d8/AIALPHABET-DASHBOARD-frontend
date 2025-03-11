@@ -78,3 +78,19 @@ export const bookSchema = z.object({
 export const qrCodeSchema = z.object({
   bookId: z.string().min(1, "الكتاب مطلوب"),
 });
+
+
+// Password update schema
+export const passwordUpdateSchema = z
+  .object({
+    currentPassword: z
+      .string()
+      .min(6, "Password must be at least 6 characters")
+      .max(32, "Password must be at most 32 characters"),
+    newPassword: z
+      .string()
+      .min(6, "Password must be at least 6 characters")
+      .max(32, "Password must be at most 32 characters")
+    
+  })
+ 
