@@ -66,9 +66,10 @@ const CreateBookForm = () => {
   };
 
   const permissions = [
-    { id: "CHAT", name: "chat" },
-    { id: "GOALS", name: "goals" },
-    { id: "READ", name: "read" },
+    { id: "CHATBOOT", name: "chat boot" },
+    { id: "TODOTASK", name: "todo task" },
+    { id: "FUTURDAYS", name: "futur days" },
+    { id: "AITOOLS", name: "ai tools" },
     { id: "FOCUS", name: "focus" },
     { id: "ALL", name: "all" },
   ];

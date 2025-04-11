@@ -41,9 +41,10 @@ model UserProfile {
 }
 
 enum Permission {
-  CHAT
-  GOALS
-  READ
+  CHATBOOT 
+  TODOTASK
+  FUTURDAYS
+  AITOOLS
   FOCUS
   ALL
 }
