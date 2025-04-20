@@ -29,7 +29,7 @@ model User {
   profile   UserProfile?
   // Add other user fields as needed
   todos     Todo[]
-  permission Permission[]
+  permission Permissions[]
 }
 
 model UserProfile {
@@ -40,10 +40,10 @@ model UserProfile {
   avatarUrl  String   @default("avatars/avatar1.jpg")
 }
 
-enum Permission {
-  CHATBOOT 
+enum Permissions {
+  CHATBOT 
   TODOTASK
-  FUTURDAYS
+  FUTUREDAY
   AITOOLS
   FOCUS
   ALL
@@ -53,7 +53,7 @@ model Book {
   id          String       @id @default(cuid())
   title       String
   description String?
-  permission  Permission[]
+  permission  Permissions[]
   image       String?      @default("/placeholder-book.jpg")
   qrCodes     QRCode[]
   createdAt   DateTime     @default(now())
