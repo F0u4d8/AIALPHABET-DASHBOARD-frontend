@@ -7,19 +7,18 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { QrCode, Pencil, Trash } from "lucide-react";
-import { Book, Permission } from "@prisma/client";
+import {  Permissions } from "@prisma/client";
 import { fetchFilteredBooks } from "@/lib/actions/bookActions";
 import Image from "next/image";
 import { BookQR, DeleteBook, UpdateBook } from "./buttons";
 
 // وظيفة مساعدة لتحويل نوع التصريح إلى نص عربي
-const getPermissionLabel = (permission: Permission) => {
+const getPermissionLabel = (permission: Permissions) => {
   const labels = {
-    CHAT: "chat",
-    GOALS: "goals",
-    READ: "read",
+    CHATBOT: "chatbot",
+    TODOTASK: "todo task",
+    FUTUREDAY: "future day",
+    AITOOLS: "ai tools",
     FOCUS: "focus",
     ALL: "all",
   };
@@ -27,13 +26,14 @@ const getPermissionLabel = (permission: Permission) => {
 };
 
 // وظيفة مساعدة لتحديد لون البادج حسب نوع التصريح
-const getPermissionColor = (permission: Permission) => {
+const getPermissionColor = (permission: Permissions) => {
   const colors = {
-    CHAT: "bg-blue-500",
-    GOALS: "bg-green-500",
-    READ: "bg-yellow-500",
-    FOCUS: "bg-purple-500",
-    ALL: "bg-red-500",
+    CHATBOT: "bg-blue-500",
+    TODOTASK: "bg-green-500",
+    FUTUREDAY: "bg-yellow-500",
+    AITOOLS: "bg-purple-500",
+    FOCUS: "bg-red-500",
+    ALL: "bg-gray-500",
   };
   return colors[permission] || "bg-gray-500";
 };
