@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import jwt from "jsonwebtoken";
 import { generateToken } from "@/lib/tokens/generateTokens";
-import { Permission, UserRole } from "@prisma/client";
+import { Permissions, UserRole } from "@prisma/client";
 
 const JWT_SECRET = process.env.JWT_SECRET || "";
 
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
       id: string;
       email: string;
       role: UserRole;
-      permission: Permission[];
+      permission: Permissions[];
     };
 
     const token = generateToken(decoded, newProfile);
