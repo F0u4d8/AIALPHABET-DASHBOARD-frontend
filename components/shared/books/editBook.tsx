@@ -7,7 +7,7 @@ import React, { useActionState, useEffect, useRef, useState } from "react";
 import { useQuill } from "react-quilljs";
 import "quill/dist/quill.snow.css";
 import Image from "next/image";
-import { Book, Permission } from "@prisma/client";
+import { Book, Permissions } from "@prisma/client";
 import { updateBook } from "@/lib/actions/bookActions";
 
 interface CreateContentFormProps {
@@ -101,7 +101,7 @@ const EditBookForm: React.FC<CreateContentFormProps> = ({ book }) => {
                   value={permission.id}
                   className="w-4 h-4 rounded border-gray-300"
                   defaultChecked={book.permission.includes(
-                    permission.id as Permission
+                    permission.id as Permissions
                   )}
                 />
                 <label htmlFor={`permission-${permission.id}`}>
