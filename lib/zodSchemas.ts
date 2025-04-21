@@ -1,4 +1,4 @@
-import { Permission } from "@prisma/client";
+import { Permissions } from "@prisma/client";
 import { boolean, number, object, string, any, z } from "zod";
 
 export const signUpSchema = object({
@@ -67,7 +67,7 @@ export const updateTodoSchema = object({
 export const bookSchema = z.object({
   title: z.string().min(1, "العنوان مطلوب"),
   description: z.string().optional(),
-  permission: z.nativeEnum(Permission).array(),
+  permission: z.nativeEnum(Permissions).array(),
   image: z.instanceof(File).optional(),
   imageUrl: z.string().url("Invalid image URL").optional(),
 }).refine(data => data.image || data.imageUrl || true, {
