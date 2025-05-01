@@ -42,13 +42,10 @@ export const contentSchema = object({
   }).url("Invalid play store url"),
   image: any().optional(),
   imageUrl: string().url("Invalid image URL").optional(),
-}).refine(
-  (data) => data.image || data.imageUrl,
-  {
-    message: "Either image file or image URL must be provided",
-    path: ["image"],
-  }
-);
+}).refine((data) => data.image || data.imageUrl, {
+  message: "Either image file or image URL must be provided",
+  path: ["image"],
+});
 
 export const todoSchema = object({
   title: string({ required_error: "Title is required" }),
@@ -64,33 +61,31 @@ export const updateTodoSchema = object({
   isCompleted: boolean().default(false).optional(),
 });
 
-export const bookSchema = z.object({
-  title: z.string().min(1, "العنوان مطلوب"),
-  description: z.string().optional(),
-  permission: z.nativeEnum(Permissions).array(),
-  image: z.instanceof(File).optional(),
-  imageUrl: z.string().url("Invalid image URL").optional(),
-}).refine(data => data.image || data.imageUrl || true, {
-  message: "Either image file or image URL must be provided",
-  path: ["image"]
-});
+export const bookSchema = z
+  .object({
+    title: z.string().min(1, "العنوان مطلوب"),
+    description: z.string().optional(),
+    permission: z.nativeEnum(Permissions).array(),
+    image: z.any().optional(),
+    imageUrl: z.string().url("Invalid image URL").optional(),
+  })
+  .refine((data) => data.image || data.imageUrl || true, {
+    message: "Either image file or image URL must be provided",
+    path: ["image"],
+  });
 
 export const qrCodeSchema = z.object({
   bookId: z.string().min(1, "الكتاب مطلوب"),
 });
 
-
 // Password update schema
-export const passwordUpdateSchema = z
-  .object({
-    currentPassword: z
-      .string()
-      .min(6, "Password must be at least 6 characters")
-      .max(32, "Password must be at most 32 characters"),
-    newPassword: z
-      .string()
-      .min(6, "Password must be at least 6 characters")
-      .max(32, "Password must be at most 32 characters")
-    
-  })
- 
+export const passwordUpdateSchema = z.object({
+  currentPassword: z
+    .string()
+    .min(6, "Password must be at least 6 characters")
+    .max(32, "Password must be at most 32 characters"),
+  newPassword: z
+    .string()
+    .min(6, "Password must be at least 6 characters")
+    .max(32, "Password must be at most 32 characters"),
+});

@@ -79,9 +79,12 @@ export async function createBook(prevState: any, formData: FormData) {
     title: formData.get("title"),
     description: formData.get("pitch"),
     permission: formData.getAll("permission"),
-    image: imageFile,
-    imageUrl: imageUrl,
+    image: imageFile || null,
+    imageUrl: imageUrl || null,
   });
+
+  console.log(validatedFields.error?.flatten().fieldErrors);
+
 
   if (!validatedFields.success) {
     return {
